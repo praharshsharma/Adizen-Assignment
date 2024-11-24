@@ -10,6 +10,7 @@ const Cart = () => {
 
   const [cartItems, setCartItems] = useState([]);
   const [t, st] = useState(0);
+
   const getcart = async () => {
     const res = await getCart({
       email: currentUser.user.email,
@@ -22,15 +23,13 @@ const Cart = () => {
     localStorage.setItem("cartcnt", totalQuantity);
   };
 
-  const handleRemoveItem = async (id, q, price) => {
+  const handleRemoveItem = async (id) => {
     const res = await removefromcart({
       email: currentUser.user.email,
       productId: id,
     });
 
     setCartItems(cartItems.filter((item) => item.productId !== id));
-
-    //getcart()
   };
 
   useEffect(() => {
@@ -41,14 +40,6 @@ const Cart = () => {
     return cartItems
       .reduce((total, item) => total + item.price * item.quantity, 0)
       .toFixed(2);
-  };
-
-  const handleQuantityIncrease = (price) => {
-    //st(Number(t)+Number(price));
-  };
-
-  const handleQuantityDecrease = (price) => {
-    //st(Number(t)-Number(price));
   };
 
   return (
@@ -77,9 +68,10 @@ const Cart = () => {
             display: "flex",
             justifyContent: "space-between",
             position: "relative",
+            flexDirection: "column",
           }}
         >
-          <div style={{ flex: 1, marginRight: "20px" }}>
+          <div style={{ flex: 1, marginRight: { md: "20px" } }}>
             {cartItems.length === 0 ? (
               <Typography variant="h6" align="center" color="textSecondary">
                 Your cart is empty!
@@ -91,24 +83,25 @@ const Cart = () => {
                   key={item.productId}
                   product={item}
                   onRemove={handleRemoveItem}
-                  onQuantityIncrease={handleQuantityIncrease}
                   sx={{ marginBottom: "20px", width: "100%" }}
-                  onQuantityDecrease={handleQuantityDecrease}
                 />
               ))
             )}
           </div>
 
+          {/* Total and Checkout Button - Positioned Conditionally */}
           <Box
             sx={{
-              position: "fixed",
-              top: "20rem",
-              right: 20,
-              width: "300px",
+              width: { xs: "100%", md: "300px" },
+              position: { xs: "relative", md: "fixed" },
+              top: { md: "20rem" },
+              right: { md: 20 },
               padding: 3,
               boxShadow: 3,
               borderRadius: "10px",
               backgroundColor: "white",
+              mt: { xs: 3, sm: 3, md: 0 }, // Margin top for mobile view
+              order: { xs: 2, md: 1 }, // Ensures box appears below items on mobile
             }}
           >
             <Typography
@@ -131,7 +124,7 @@ const Cart = () => {
                 },
               }}
               onClick={() => {
-                if (cartItems.length != 0) {
+                if (cartItems.length !== 0) {
                   alert("Proceeding to Checkout");
                   window.location.href = "/checkout";
                 } else alert("No items in cart");

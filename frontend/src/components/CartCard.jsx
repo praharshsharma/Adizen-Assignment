@@ -6,7 +6,7 @@ import { getproduct } from '../api/api';
 import { addtocart, decreseQuantity, removefromcart } from '../api/api';
 import { increasecart } from '../Redux/userSlice';
 
-const CartCard = ({ productId,product, onRemove, onQuantityIncrease, onQuantityDecrease }) => {
+const CartCard = ({ productId,product, onRemove }) => {
 
   const [productData,setProductData] = useState({});
   const [q,sq] = useState(0);
@@ -18,7 +18,7 @@ const CartCard = ({ productId,product, onRemove, onQuantityIncrease, onQuantityD
   const handleIncreaseQuantity = async () => {
     if(productData.countInStock > q)
     {
-      onQuantityIncrease(productData.price);
+     
     sq(q+1);
     console.log(currentUser.user.email)
     console.log(isLoggedIn);
@@ -42,7 +42,6 @@ const CartCard = ({ productId,product, onRemove, onQuantityIncrease, onQuantityD
   const handleDecreaseQuantity =async () => {
     if(q>1)
     {
-      onQuantityDecrease(productData.price);
       sq(q-1);
       console.log(currentUser.user.email)
       console.log(isLoggedIn);

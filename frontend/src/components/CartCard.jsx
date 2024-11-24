@@ -1,36 +1,82 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, IconButton } from '@mui/material';
 import { Add, Remove } from '@mui/icons-material';
+import { useDispatch, useSelector } from "react-redux";
+import { getproduct } from '../api/api';
+import { addtocart, decreseQuantity, removefromcart } from '../api/api';
+import { increasecart } from '../Redux/userSlice';
 
-const CartCard = ({ product, onRemove, onQuantityChange }) => {
+const CartCard = ({ productId,product, onRemove, onQuantityIncrease, onQuantityDecrease }) => {
 
-  const handleIncreaseQuantity = () => {
-    onQuantityChange(product.id, product.quantity + 1);
-  };
+  const [productData,setProductData] = useState({});
+  const [q,sq] = useState(0);
 
-  const handleDecreaseQuantity = () => {
-    if (product.quantity > 1) {
-      onQuantityChange(product.id, product.quantity - 1);
+  const dispatch = useDispatch();
+
+  const { isLoggedIn, currentUser, cartCount } = useSelector((state) => state.user);
+
+  const handleIncreaseQuantity = async () => {
+    if(productData.countInStock > q)
+    {
+      onQuantityIncrease(productData.price);
+    sq(q+1);
+    console.log(currentUser.user.email)
+    console.log(isLoggedIn);
+    const res = await addtocart({
+      email : currentUser.user.email,
+      productId : productId
+    })
+
+    dispatch(increasecart())
+
+    localStorage.setItem('cartcnt',cartCount);
     }
+    else
+    {
+      alert("out of stock");
+    }
+    
+
   };
+
+  const handleDecreaseQuantity =async () => {
+    if(q>1)
+    {
+      onQuantityDecrease(productData.price);
+      sq(q-1);
+      console.log(currentUser.user.email)
+      console.log(isLoggedIn);
+      const res = await decreseQuantity({
+        email : currentUser.user.email,
+        productId : productId
+    })
+    }
+    
+  };
+
+  const getProductDetail = async ()=>{
+    const res = await getproduct(productId)
+    console.log(res);
+    setProductData(res.product);
+    sq(product.quantity);
+  }
+
+  useEffect(()=>{
+    getProductDetail()
+  },[])
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'row', maxWidth: 700, mb: 2, boxShadow: 2 }}>
-      <CardMedia
-        component="img"
-        sx={{ width: 300, height: 200, objectFit: 'cover' }}
-        image={product.image}
-        alt={product.name}
-      />
+      <img src={productData.image} />
       <CardContent sx={{ flex: 1 }}>
         <Typography variant="h6" gutterBottom>
-          {product.name}
+          {productData.name}
         </Typography>
         <Typography variant="body2" color="text.secondary" paragraph>
-          {product.description}
+          {productData.description}
         </Typography>
         <Typography variant="body1" color="primary" sx={{ fontWeight: 'bold' }}>
-          ${product.price}
+        ₹{productData.price}
         </Typography>
         <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
           <Typography variant="body2">Quantity:</Typography>
@@ -38,7 +84,7 @@ const CartCard = ({ product, onRemove, onQuantityChange }) => {
             <Remove />
           </IconButton>
           <Typography variant="body2" sx={{ marginX: 1 }}>
-            {product.quantity}
+            {q}
           </Typography>
           <IconButton onClick={handleIncreaseQuantity} size="small">
             <Add />
@@ -47,8 +93,12 @@ const CartCard = ({ product, onRemove, onQuantityChange }) => {
         <Button
           variant="contained"
           color="error"
-          onClick={() => onRemove(product.id)}
+          onClick={() => {
+            onRemove(productData._id,q,productData.price)
+            console.log(productData._id)
+            }}
           sx={{ marginTop: 2, width: '100%' }}
+          
         >
           Remove
         </Button>

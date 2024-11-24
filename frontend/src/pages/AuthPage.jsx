@@ -1,18 +1,33 @@
-import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Grid, FormControlLabel, Checkbox, Link, Divider } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Grid,
+  FormControlLabel,
+  Checkbox,
+  Link,
+  Divider,
+} from "@mui/material";
+import signup from "../api/api";
+import { signin } from "../api/api";
+import { useDispatch, useSelector } from "react-redux";
+import { authSuccess, authstore } from "../Redux/userSlice";
 
 const AuthPage = () => {
+  const dispatch = useDispatch();
   const [isLogin, setIsLogin] = useState(true);
+  const { isLoggedIn, currentUser } = useSelector((state) => state.user);
 
-  // State for form fields
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
   });
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -21,32 +36,43 @@ const AuthPage = () => {
     });
   };
 
-  // Toggle between login and signup
   const toggleForm = () => {
     setIsLogin(!isLogin);
   };
 
-  // Handle form submission (for now just logging the data)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
-      // Login logic here
-      console.log('Login with:', formData.email, formData.password);
+      try {
+        const res = await signin({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        dispatch(authSuccess(res.data));
+        dispatch(
+          authstore({
+            email: formData.email,
+            password: formData.password,
+          })
+        );
+      } catch {
+        alert("wrong ID or password");
+        console.log(e);
+      }
     } else {
-      // Signup logic here
-      console.log('Signup with:', formData);
+      if (signup(formData) == 200) window.location.href = "/";
     }
   };
 
   return (
     <Container maxWidth="xs">
-      <Box sx={{ marginTop: '50px' }}>
+      <Box sx={{ marginTop: "50px" }}>
         <Typography variant="h4" align="center" gutterBottom>
-          {isLogin ? 'Login' : 'Sign Up'}
+          {isLogin ? "Login" : "Sign Up"}
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          {/* Name field (only for Signup) */}
           {!isLogin && (
             <TextField
               label="Full Name"
@@ -59,7 +85,6 @@ const AuthPage = () => {
             />
           )}
 
-          {/* Email field */}
           <TextField
             label="Email"
             name="email"
@@ -71,7 +96,6 @@ const AuthPage = () => {
             onChange={handleChange}
           />
 
-          {/* Password field */}
           <TextField
             label="Password"
             name="password"
@@ -83,47 +107,43 @@ const AuthPage = () => {
             onChange={handleChange}
           />
 
-          {/* Confirm Password field (only for Signup) */}
           {!isLogin && (
             <TextField
-              label="Confirm Password"
-              name="confirmPassword"
+              label="phone"
+              name="phone"
               variant="outlined"
               fullWidth
               margin="normal"
-              type="password"
-              value={formData.confirmPassword}
+              type="number"
+              value={formData.phone}
               onChange={handleChange}
             />
           )}
 
-          {/* Remember me checkbox (only for Login) */}
           {isLogin && (
             <FormControlLabel
               control={<Checkbox name="remember" />}
               label="Remember me"
-              sx={{ marginBottom: '16px' }}
+              sx={{ marginBottom: "16px" }}
             />
           )}
 
-          {/* Submit button */}
           <Button
             type="submit"
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ marginTop: '16px', padding: '12px' }}
+            sx={{ marginTop: "16px", padding: "12px" }}
           >
-            {isLogin ? 'Login' : 'Sign Up'}
+            {isLogin ? "Login" : "Sign Up"}
           </Button>
 
-          {/* Divider between forms */}
-          <Box sx={{ marginTop: '16px', textAlign: 'center' }}>
-            <Divider sx={{ marginBottom: '16px' }} />
+          <Box sx={{ marginTop: "16px", textAlign: "center" }}>
+            <Divider sx={{ marginBottom: "16px" }} />
             <Typography variant="body2">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-              <Link href="#" onClick={toggleForm} sx={{ cursor: 'pointer' }}>
-                {isLogin ? 'Sign Up' : 'Login'}
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+              <Link href="#" onClick={toggleForm} sx={{ cursor: "pointer" }}>
+                {isLogin ? "Sign Up" : "Login"}
               </Link>
             </Typography>
           </Box>

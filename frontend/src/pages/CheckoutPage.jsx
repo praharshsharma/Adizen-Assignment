@@ -1,32 +1,50 @@
-import React, { useState } from 'react';
-import { Container, Typography, TextField, Button, Box, Card, CardContent, Divider, Grid } from '@mui/material';
+// src/pages/CheckoutPage.js
+
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Divider,
+  Grid,
+} from "@mui/material";
+import { getCart } from "../api/api";
+import { useSelector } from "react-redux";
+import CheckoutCard from "../components/CheckoutCard";
+import { order } from "../api/api";
 
 const CheckoutPage = () => {
-  // Sample cart items
-  const cartItems = [
-    { id: 1, name: 'Product 1', price: 29.99, quantity: 1 },
-    { id: 2, name: 'Product 2', price: 49.99, quantity: 2 },
-    { id: 3, name: 'Product 3', price: 39.99, quantity: 1 },
-  ];
+  const { isLoggedIn, currentUser } = useSelector((state) => state.user);
+  const [cartItems, setCartItems] = useState([]);
 
-  // Shipping form fields
+  const getcart = async () => {
+    const res = await getCart({
+      email: currentUser.user.email,
+    });
+    setCartItems(res.cart.items);
+  };
+
+  useEffect(() => {
+    getcart();
+  }, []);
+
   const [shippingInfo, setShippingInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    zip: '',
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    zip: "",
   });
 
-  // Payment form fields
   const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
   });
 
-  // Handle form change
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (shippingInfo.hasOwnProperty(name)) {
@@ -36,15 +54,21 @@ const CheckoutPage = () => {
     }
   };
 
-  // Calculate total price
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+    return cartItems
+      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .toFixed(2);
   };
 
-  // Handle checkout submission
-  const handleCheckout = () => {
-    // Handle checkout logic here (e.g., call an API to process the order)
-    alert('Order placed successfully!');
+  const handleCheckout = async () => {
+    const res = await order({
+      email: currentUser.user.email,
+      address: shippingInfo.address,
+    });
+
+    console.log(res);
+    alert("order placed");
+    window.location.href = "/";
   };
 
   return (
@@ -53,33 +77,30 @@ const CheckoutPage = () => {
         Checkout
       </Typography>
 
-      <Card>
-        <CardContent>
-          <Typography variant="h6">Order Summary</Typography>
-          <Divider sx={{ margin: '10px 0' }} />
-          {cartItems.map((item) => (
-            <Grid container key={item.id} spacing={2} sx={{ marginBottom: '10px' }}>
-              <Grid item xs={8}>
-                <Typography>{item.name} (x{item.quantity})</Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography align="right">${(item.price * item.quantity).toFixed(2)}</Typography>
-              </Grid>
-            </Grid>
-          ))}
-          <Divider sx={{ margin: '10px 0' }} />
-          <Grid container spacing={2}>
-            <Grid item xs={8}>
-              <Typography variant="h6">Total</Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography align="right" variant="h6">${calculateTotal()}</Typography>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+      {/* Order Summary */}
+      <Typography variant="h6" gutterBottom>
+        Order Summary
+      </Typography>
+      <Divider sx={{ margin: "10px 0" }} />
 
-      <Box sx={{ marginTop: '20px' }}>
+      {cartItems.map((item) => (
+        <CheckoutCard key={item.id} item={item} />
+      ))}
+
+      <Divider sx={{ margin: "10px 0" }} />
+      <Grid container spacing={2}>
+        <Grid item xs={8}>
+          <Typography variant="h6">Total</Typography>
+        </Grid>
+        <Grid item xs={4}>
+          <Typography align="right" variant="h6">
+            ₹{calculateTotal()}
+          </Typography>
+        </Grid>
+      </Grid>
+
+      {/* Shipping Information */}
+      <Box sx={{ marginTop: "20px" }}>
         <Typography variant="h6" gutterBottom>
           Shipping Information
         </Typography>
@@ -90,7 +111,7 @@ const CheckoutPage = () => {
           fullWidth
           value={shippingInfo.name}
           onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
+          sx={{ marginBottom: "10px" }}
         />
         <TextField
           label="Email"
@@ -100,7 +121,7 @@ const CheckoutPage = () => {
           type="email"
           value={shippingInfo.email}
           onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
+          sx={{ marginBottom: "10px" }}
         />
         <TextField
           label="Phone Number"
@@ -110,7 +131,7 @@ const CheckoutPage = () => {
           type="tel"
           value={shippingInfo.phone}
           onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
+          sx={{ marginBottom: "10px" }}
         />
         <TextField
           label="Address"
@@ -119,7 +140,7 @@ const CheckoutPage = () => {
           fullWidth
           value={shippingInfo.address}
           onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
+          sx={{ marginBottom: "10px" }}
         />
         <Grid container spacing={2}>
           <Grid item xs={6}>
@@ -130,7 +151,7 @@ const CheckoutPage = () => {
               fullWidth
               value={shippingInfo.city}
               onChange={handleChange}
-              sx={{ marginBottom: '10px' }}
+              sx={{ marginBottom: "10px" }}
             />
           </Grid>
           <Grid item xs={6}>
@@ -141,13 +162,14 @@ const CheckoutPage = () => {
               fullWidth
               value={shippingInfo.zip}
               onChange={handleChange}
-              sx={{ marginBottom: '10px' }}
+              sx={{ marginBottom: "10px" }}
             />
           </Grid>
         </Grid>
       </Box>
 
-      <Box sx={{ marginTop: '20px' }}>
+      {/* Payment Information */}
+      <Box sx={{ marginTop: "20px" }}>
         <Typography variant="h6" gutterBottom>
           Payment Information
         </Typography>
@@ -158,7 +180,7 @@ const CheckoutPage = () => {
           fullWidth
           value={paymentInfo.cardNumber}
           onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
+          sx={{ marginBottom: "10px" }}
         />
         <Grid container spacing={2}>
           <Grid item xs={6}>
@@ -169,7 +191,7 @@ const CheckoutPage = () => {
               fullWidth
               value={paymentInfo.expiryDate}
               onChange={handleChange}
-              sx={{ marginBottom: '10px' }}
+              sx={{ marginBottom: "10px" }}
             />
           </Grid>
           <Grid item xs={6}>
@@ -181,13 +203,13 @@ const CheckoutPage = () => {
               type="password"
               value={paymentInfo.cvv}
               onChange={handleChange}
-              sx={{ marginBottom: '10px' }}
+              sx={{ marginBottom: "10px" }}
             />
           </Grid>
         </Grid>
       </Box>
 
-      <Box sx={{ marginTop: '20px' }}>
+      <Box sx={{ marginTop: "20px" }}>
         <Button
           variant="contained"
           color="primary"

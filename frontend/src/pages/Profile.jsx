@@ -1,11 +1,29 @@
-import React from 'react';
-import { Container, Typography, Box, TextField, Button } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import { Container, Typography, Box, TextField, Button } from "@mui/material";
+import { getUser } from "../api/api";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../Redux/userSlice";
 
 const Profile = () => {
-  const user = {
-    name: 'Praharsh Sharma',
-    email: 'praharshsharma1502@example.com',
-    phone: '+919662646922',
+  const { isLoggedIn, currentUser } = useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
+
+  const [user, setuser] = useState("");
+
+  const getuser = async () => {
+    const res = await getUser(currentUser.user.email);
+    console.log(res);
+    setuser(res.user);
+  };
+
+  useEffect(() => {
+    getuser();
+  }, []);
+
+  const handleLogOut = () => {
+    localStorage.setItem("isLoggedIn", false);
+    dispatch(logout());
   };
 
   return (
@@ -15,18 +33,17 @@ const Profile = () => {
       </Typography>
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           gap: 2,
           mt: 3,
           p: 3,
           boxShadow: 3,
           borderRadius: 2,
-          backgroundColor: '#f9f9f9',
+          backgroundColor: "#f9f9f9",
         }}
       >
         <TextField
-          label="Name"
           value={user.name}
           variant="outlined"
           fullWidth
@@ -35,7 +52,6 @@ const Profile = () => {
           }}
         />
         <TextField
-          label="Email"
           value={user.email}
           variant="outlined"
           fullWidth
@@ -44,7 +60,6 @@ const Profile = () => {
           }}
         />
         <TextField
-          label="Phone Number"
           value={user.phone}
           variant="outlined"
           fullWidth
@@ -54,6 +69,15 @@ const Profile = () => {
         />
         <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
           Edit Profile
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          fullWidth
+          sx={{ mt: 2 }}
+          onClick={handleLogOut}
+        >
+          Logout
         </Button>
       </Box>
     </Container>

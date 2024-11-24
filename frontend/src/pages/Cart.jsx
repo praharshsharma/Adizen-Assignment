@@ -1,135 +1,141 @@
-import React, { useState } from 'react';
-import { Typography, Button, Box, Container } from '@mui/material';
-import CartCard from '../components/CartCard';
+import React, { useState, useEffect } from "react";
+import { Typography, Button, Box, Container } from "@mui/material";
+import CartCard from "../components/CartCard";
+import { getCart } from "../api/api";
+import { useDispatch, useSelector } from "react-redux";
+import { removefromcart } from "../api/api";
 
 const Cart = () => {
-  const initialCartItems = [
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 29.99,
-      quantity: 1,
-      image: 'https://via.placeholder.com/150',
-      description: 'This is a description for Product 1.',
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 49.99,
-      quantity: 1,
-      image: 'https://via.placeholder.com/150',
-      description: 'This is a description for Product 2.',
-    },
-    {
-      id: 3,
-      name: 'Product 3',
-      price: 39.99,
-      quantity: 1,
-      image: 'https://via.placeholder.com/150',
-      description: 'This is a description for Product 3.',
-    },
-    {
-      id: 4,
-      name: 'Product 4',
-      price: 59.99,
-      quantity: 1,
-      image: 'https://via.placeholder.com/150',
-      description: 'This is a description for Product 4.',
-    },
-  ];
+  const { isLoggedIn, currentUser } = useSelector((state) => state.user);
 
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [cartItems, setCartItems] = useState([]);
+  const [t, st] = useState(0);
+  const getcart = async () => {
+    const res = await getCart({
+      email: currentUser.user.email,
+    });
+    setCartItems(res.cart.items);
+    const data = res.cart.items;
 
-  // Calculate total price
+    const totalQuantity = data.reduce((sum, item) => sum + item.quantity, 0);
+
+    localStorage.setItem("cartcnt", totalQuantity);
+  };
+
+  const handleRemoveItem = async (id, q, price) => {
+    const res = await removefromcart({
+      email: currentUser.user.email,
+      productId: id,
+    });
+
+    setCartItems(cartItems.filter((item) => item.productId !== id));
+
+    //getcart()
+  };
+
+  useEffect(() => {
+    getcart();
+  }, [handleRemoveItem]);
+
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+    return cartItems
+      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .toFixed(2);
   };
 
-  // Handle quantity change directly
-  const handleQuantityChange = (id, newQuantity) => {
-    if (newQuantity >= 1) {
-      setCartItems(cartItems.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
-    }
+  const handleQuantityIncrease = (price) => {
+    //st(Number(t)+Number(price));
   };
 
-  // Handle item removal
-  const handleRemoveItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const handleQuantityDecrease = (price) => {
+    //st(Number(t)-Number(price));
   };
 
   return (
-    <>      
-      {/* Fixed title */}
+    <>
       <Typography
         variant="h3"
         align="center"
         gutterBottom
         sx={{
-          color: '#333',
-          fontWeight: 'bold',
-          backgroundColor: 'white',
-          position:'sticky',
-          top: '4rem',
+          color: "#333",
+          fontWeight: "bold",
+          backgroundColor: "white",
+          position: "sticky",
+          top: "4rem",
           zIndex: 10,
-          padding: '10px 0',
-          boxShadow: '0px 4px 2px -2px gray',
+          padding: "10px 0",
+          boxShadow: "0px 4px 2px -2px gray",
         }}
       >
         Your Shopping Cart
       </Typography>
 
       <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-          
-          {/* Cart Items Section (Left Column) */}
-          <div style={{ flex: 1, marginRight: '20px' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            position: "relative",
+          }}
+        >
+          <div style={{ flex: 1, marginRight: "20px" }}>
             {cartItems.length === 0 ? (
               <Typography variant="h6" align="center" color="textSecondary">
                 Your cart is empty!
               </Typography>
             ) : (
-              cartItems.map(item => (
+              cartItems.map((item) => (
                 <CartCard
-                  key={item.id}
+                  productId={item.productId}
+                  key={item.productId}
                   product={item}
                   onRemove={handleRemoveItem}
-                  onQuantityChange={handleQuantityChange}
-                  sx={{ marginBottom: '20px', width: '100%' }}  
+                  onQuantityIncrease={handleQuantityIncrease}
+                  sx={{ marginBottom: "20px", width: "100%" }}
+                  onQuantityDecrease={handleQuantityDecrease}
                 />
               ))
             )}
           </div>
 
-          {/* Fixed Total and Checkout Section (Right Column) */}
           <Box
             sx={{
-              position: 'fixed',
-              top: '20rem', // Fixed position at 5rem from the top
+              position: "fixed",
+              top: "20rem",
               right: 20,
-              width: '300px',
+              width: "300px",
               padding: 3,
               boxShadow: 3,
-              borderRadius: '10px',
-              backgroundColor: 'white',
+              borderRadius: "10px",
+              backgroundColor: "white",
             }}
           >
-            <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: 2 }}>
-              Total: ${calculateTotal()}
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: "bold", marginBottom: 2 }}
+            >
+              Total: ₹{Number(calculateTotal()) + Number(t)}
             </Typography>
             <Button
               variant="contained"
               color="primary"
               sx={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '30px',
-                fontWeight: 'bold',
+                width: "100%",
+                padding: "12px",
+                borderRadius: "30px",
+                fontWeight: "bold",
                 boxShadow: 2,
-                '&:hover': {
+                "&:hover": {
                   boxShadow: 6,
                 },
               }}
-              onClick={() => alert('Proceeding to Checkout')}
+              onClick={() => {
+                if (cartItems.length != 0) {
+                  alert("Proceeding to Checkout");
+                  window.location.href = "/checkout";
+                } else alert("No items in cart");
+              }}
             >
               Proceed to Checkout
             </Button>

@@ -1,37 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PurchaseHistoryCard from '../components/PurchaseHistoryCard';
 import { Container, Typography, Grid, Paper, Box } from '@mui/material';
+import { gethistory } from '../api/api';
+import { useSelector } from 'react-redux';
 
 const PurchaseHistoryPage = () => {
-  // Sample purchase history data
-  const initialPurchases = [
-    {
-      purchaseId: 'P12345',
-      productId: '1001',
-      productName: 'Product 1',
-      quantity: 2,
-      price: 29.99,
-      purchaseDate: '2024-11-10T14:30:00Z',
-    },
-    {
-      purchaseId: 'P12346',
-      productId: '1002',
-      productName: 'Product 2',
-      quantity: 1,
-      price: 49.99,
-      purchaseDate: '2024-11-12T10:15:00Z',
-    },
-    {
-      purchaseId: 'P12347',
-      productId: '1003',
-      productName: 'Product 3',
-      quantity: 3,
-      price: 19.99,
-      purchaseDate: '2024-11-15T08:45:00Z',
-    },
-  ];
+  const { isLoggedIn, currentUser } = useSelector((state) => state.user);
+  const [data,setData] = useState([]);
 
-  const [purchases, setPurchases] = useState(initialPurchases);
+  const getHistory = async()=>{
+    const res = await gethistory({
+      email : currentUser.user.email
+    })
+
+    console.log(res)
+
+    setData(res.data.orders);
+  }
+
+  useEffect(()=>{
+    getHistory()
+  },[])
 
   return (
     <Container maxWidth="lg" sx={{ marginTop: 4 }}>
@@ -41,7 +30,7 @@ const PurchaseHistoryPage = () => {
 
       {/* Purchase History List */}
       <Box>
-        {purchases.length === 0 ? (
+        {data.length === 0 ? (
           <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary">
               You haven't made any purchases yet!
@@ -49,8 +38,8 @@ const PurchaseHistoryPage = () => {
           </Paper>
         ) : (
           <Grid container spacing={3}>
-            {purchases.map(purchase => (
-              <Grid item xs={12} sm={6} md={4} key={purchase.purchaseId}>
+            {data.map(purchase => (
+              <Grid item xs={12} sm={6} md={4} key={data.purchaseId}>
                 <PurchaseHistoryCard purchase={purchase} />
               </Grid>
             ))}

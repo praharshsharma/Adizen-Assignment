@@ -83,12 +83,23 @@ const headers = {
     return result;
   }
 
-  async function order(data) {
-    const result = await axios.post(`${BASE_URL}/api/order/placeorder`, data, { headers });
+  // async function order(data) {
+  //   const result = await axios.post(`${BASE_URL}/api/order/placeorder`, data, { headers });
 
-    console.log(result.status)
-    return result;
+  //   console.log(result.status)
+  //   return result;
+  // }
+
+  async function order(data) {
+    try {
+      const result = await axios.post(`${BASE_URL}/api/order/placeorder`, data, { headers });
+      return result;
+    } catch (error) {
+      console.error("Order request failed:", error);
+      throw error; // Re-throw error after logging it
+    }
   }
+  
 
   async function gethistory(data) {
     const result = await axios.post(`${BASE_URL}/api/users/history`, data, { headers });
@@ -109,13 +120,25 @@ const headers = {
     return [];
   }
 
+  async function getorder(data) {
+    const result = await axios.get(`${BASE_URL}/api/order/${data.email}/${data.id}`, { headers });
+
+    console.log(result)
+  
+    if (result.status === 200) {
+      return result.data;
+    }
+  
+    return [];
+  }
+
 
 
 
 
 export default signup;
 
-export {signin,getAllProducts,addtocart,getCart,getproduct,decreseQuantity,removefromcart,order,gethistory,getUser};
+export {signin,getAllProducts,addtocart,getCart,getproduct,decreseQuantity,removefromcart,order,gethistory,getUser,getorder};
 
 
 

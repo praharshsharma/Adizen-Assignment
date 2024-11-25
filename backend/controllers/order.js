@@ -66,4 +66,49 @@ const placeOrder = async (req, res, next) => {
   }
 };
 
-module.exports = { placeOrder };
+// Controller to get order details by email and orderId
+const getOrderByEmailAndId = async (req, res, next) => {
+    const { email, orderId } = req.params;
+
+    try {
+        // Find the user by email
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return next(new ErrorHandler("User not found!", 404));
+        }
+
+        // Check if the order exists for the user
+        const order = await Order.findById(orderId).populate({
+            path: 'products.productId',
+            select: 'name description price',
+        });
+
+        if (!order) {
+            return next(new ErrorHandler("Order not found!", 404));
+        }
+
+        // Verify that the order belongs to the user
+        const orderInHistory = user.history.find(
+            (entry) => entry.orderId.toString() === orderId
+        );
+
+        if (!orderInHistory) {
+            return next(
+                new ErrorHandler("Order does not belong to this user!", 403)
+            );
+        }
+
+        res.status(200).json({
+            success: true,
+            data: order,
+        });
+    } catch (error) {
+        console.error("Error fetching order:", error);
+        next(new ErrorHandler("Something went wrong", 500));
+    }
+};
+
+
+
+module.exports = { placeOrder, getOrderByEmailAndId };

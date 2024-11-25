@@ -83,22 +83,14 @@ const headers = {
     return result;
   }
 
-  // async function order(data) {
-  //   const result = await axios.post(`${BASE_URL}/api/order/placeorder`, data, { headers });
-
-  //   console.log(result.status)
-  //   return result;
-  // }
-
   async function order(data) {
-    try {
-      const result = await axios.post(`${BASE_URL}/api/order/placeorder`, data, { headers });
-      return result;
-    } catch (error) {
-      console.error("Order request failed:", error);
-      throw error; // Re-throw error after logging it
-    }
+    const result = await axios.post(`${BASE_URL}/api/order/placeorder`, data, { headers });
+
+    console.log(result.status)
+    return result;
   }
+
+  
   
 
   async function gethistory(data) {

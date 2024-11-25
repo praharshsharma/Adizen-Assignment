@@ -1,4 +1,4 @@
-# Adizen-Assignment
+# Assignment
 
 # E-Commerce Application (PShop)
 
